@@ -402,7 +402,7 @@ void visualize(char *cfgfile, char *weightfile)
 #endif
 }
 
-void export(char *cfgfile, char *weightfile)
+void export(char *cfgfile, char *weightfile, char *out)
 {
     network net = parse_network_cfg(cfgfile);
     if(weightfile){
@@ -413,7 +413,7 @@ void export(char *cfgfile, char *weightfile)
     for(i=0; i<net.n; i++) {
         layer l = net.layers[i];
         printf("n: %d, type %d\n", i, l.type);
-        if(l.type == 0) {
+        if(l.type == CONVOLUTIONAL) {
             int wg_num = l.n*l.c*l.size*l.size;
             int b_num = l.n;
          
@@ -422,7 +422,7 @@ void export(char *cfgfile, char *weightfile)
             wg_num, b_num, l.batch_normalize);
 
             char *file[256];
-            sprintf(file, "layers/c%d.bin", i);
+            sprintf(file, "%s/c%d.bin", out, i);
 
             FILE *f;
             f = fopen(file, "w");
@@ -434,6 +434,20 @@ void export(char *cfgfile, char *weightfile)
                 fwrite((void*)l.rolling_mean, sizeof(char), sizeof(float)*b_num, f);
                 fwrite((void*)l.rolling_variance, sizeof(char), sizeof(float)*b_num, f);
             }
+            fclose (f);
+        }
+        if(l.type == REGION) {
+            printf("export REGION\n");
+            int b_num = l.n*2;
+            printf("biases: %d\n",b_num);
+
+            char *file[256];
+            sprintf(file, "%s/g%d.bin", out, i);
+
+            FILE *f;
+            f = fopen(file, "w");
+            printf("write binary %s\n", file);
+            fwrite((void*)l.biases, sizeof(char), sizeof(float)*b_num, f);
             fclose (f);
         }
         printf("\n");
@@ -543,7 +557,7 @@ int main(int argc, char **argv)
     } else if (0 == strcmp(argv[1], "visualize")){
         visualize(argv[2], (argc > 3) ? argv[3] : 0);
     } else if (0 == strcmp(argv[1], "export")){
-        export(argv[2], (argc > 3) ? argv[3] : 0);
+        export(argv[2], (argc > 3) ? argv[3] : 0, argv[4]);
     } else if (0 == strcmp(argv[1], "mkimg")){
         mkimg(argv[2], argv[3], atoi(argv[4]), atoi(argv[5]), atoi(argv[6]), argv[7]);
     } else if (0 == strcmp(argv[1], "imtest")){
