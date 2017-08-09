@@ -452,6 +452,48 @@ void export(char *cfgfile, char *weightfile, char *out)
         }
         printf("\n");
     }
+
+    // export input and output of net
+    set_batch_network(&net, 1);
+    double time;
+   
+    image im = load_image_color("data/dog.jpg",0,0);
+    image sized = letterbox_image(im, net.w, net.h);
+    
+    layer l = net.layers[net.n-1];
+    float *X = sized.data;
+    
+    //////////////////
+    {
+        char *file[256];
+        sprintf(file, "%s/input.bin", out);
+
+        FILE *f;
+        f = fopen(file, "w");
+        int size = net.inputs;
+        printf("\noutput size: %d\n", size);
+        fwrite((void*)X, sizeof(char), sizeof(float)*size, f);
+        fclose (f);
+    }
+    //////////////////
+    
+    time=what_time_is_it_now();
+    network_predict(net, X);
+    printf("Predicted in %f seconds.\n", what_time_is_it_now()-time);
+
+    //////////////////
+    {
+        char *file[256];
+        sprintf(file, "%s/output.bin", out);
+
+        FILE *f;
+        f = fopen(file, "w");
+        int size = l.outputs;
+        printf("\noutput size: %d\n", size);
+        fwrite((void*)l.output, sizeof(char), sizeof(float)*size, f);
+        fclose (f);
+    }
+    //////////////////
 }
 
 int main(int argc, char **argv)
