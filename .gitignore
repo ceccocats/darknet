@@ -21,6 +21,7 @@ cfg/
 darknet
 .fuse*
 .vscode/
+debug/
 
 # OS Generated #
 .DS_Store*

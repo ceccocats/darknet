@@ -446,7 +446,7 @@ void export(char *cfgfile, char *weightfile, char *out)
             fclose (f);
         } else if(l.type == YOLO) {
             printf("export YOLO\n");
-            assert(0 == "layer type TODO");
+            //assert(0 == "layer type TODO");
 
         } else if(l.type == SHORTCUT) {
             printf("export SHORTCUT\n");
@@ -459,7 +459,7 @@ void export(char *cfgfile, char *weightfile, char *out)
         } else if(l.type == UPSAMPLE) {
             printf("export UPSAMPLE\n");
             // no weights 
-            
+
         } else {
             assert(0 == "layer type not supported for export");
         }
@@ -507,6 +507,19 @@ void export(char *cfgfile, char *weightfile, char *out)
         fclose (f);
     }
     //////////////////
+
+    // save interlayers for debug
+    for(i=0; i<net->n; i++) {
+        layer l = net->layers[i];
+        int size = l.outputs;
+
+        char *file[256];
+        sprintf(file, "debug/layer%d_out.bin", i);
+        FILE *f;
+        f = fopen(file, "w");
+        fwrite((void*)l.output, sizeof(char), sizeof(float)*size, f);
+        fclose(f);
+    }
 }
 
 int main(int argc, char **argv)
