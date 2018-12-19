@@ -450,16 +450,16 @@ void export(char *cfgfile, char *weightfile, char *out)
 
         } else if(l.type == SHORTCUT) {
             printf("export SHORTCUT\n");
-            assert(0 == "layer type TODO");
-
+            // no weights
+            
         } else if(l.type == ROUTE) {
             printf("export ROUTE\n");
-            assert(0 == "layer type TODO");
+            // no weights
 
         } else if(l.type == UPSAMPLE) {
             printf("export UPSAMPLE\n");
-            assert(0 == "layer type TODO");
-
+            // no weights 
+            
         } else {
             assert(0 == "layer type not supported for export");
         }
