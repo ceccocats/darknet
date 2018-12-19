@@ -507,19 +507,6 @@ void export(char *cfgfile, char *weightfile, char *out)
         fclose (f);
     }
     //////////////////
-
-    // save interlayers for debug
-    for(i=0; i<net->n; i++) {
-        layer l = net->layers[i];
-        int size = l.outputs;
-
-        char *file[256];
-        sprintf(file, "debug/layer%d_out.bin", i);
-        FILE *f;
-        f = fopen(file, "w");
-        fwrite((void*)l.output, sizeof(char), sizeof(float)*size, f);
-        fclose(f);
-    }
 }
 
 int main(int argc, char **argv)

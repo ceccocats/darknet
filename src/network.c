@@ -202,6 +202,18 @@ void forward_network(network *netp)
             fill_cpu(l.outputs * l.batch, 0, l.delta, 1);
         }
         l.forward(l, net);
+
+        // DEBUG SAVE
+        {
+            int size = l.outputs;
+            char *file[256];
+            sprintf(file, "debug/layer%d_out.bin", i);
+            FILE *f;
+            f = fopen(file, "w");
+            fwrite((void*)l.output, sizeof(char), sizeof(float)*size, f);
+            fclose(f);
+        }
+
         net.input = l.output;
         if(l.truth) {
             net.truth = l.output;
