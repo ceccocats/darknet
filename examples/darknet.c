@@ -3,6 +3,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename, int top);
 extern void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, float hier_thresh, char *outfile, int fullscreen);
@@ -430,8 +431,7 @@ void export(char *cfgfile, char *weightfile, char *out)
                 fwrite((void*)l.rolling_variance, sizeof(char), sizeof(float)*b_num, f);
             }
             fclose (f);
-        }
-        if(l.type == REGION) {
+        } else if(l.type == REGION) {
             printf("export REGION\n");
             int b_num = l.n*2;
             printf("biases: %d\n",b_num);
@@ -444,12 +444,30 @@ void export(char *cfgfile, char *weightfile, char *out)
             printf("write binary %s\n", file);
             fwrite((void*)l.biases, sizeof(char), sizeof(float)*b_num, f);
             fclose (f);
+        } else if(l.type == YOLO) {
+            printf("export YOLO\n");
+            assert(0 == "layer type TODO");
+
+        } else if(l.type == SHORTCUT) {
+            printf("export SHORTCUT\n");
+            assert(0 == "layer type TODO");
+
+        } else if(l.type == ROUTE) {
+            printf("export ROUTE\n");
+            assert(0 == "layer type TODO");
+
+        } else if(l.type == UPSAMPLE) {
+            printf("export UPSAMPLE\n");
+            assert(0 == "layer type TODO");
+
+        } else {
+            assert(0 == "layer type not supported for export");
         }
         printf("\n");
     }
 
     // export input and output of net
-    set_batch_network(&net, 1);
+    set_batch_network(net, 1);
     double time;
    
     image im = load_image_color("data/dog.jpg",0,0);
@@ -466,7 +484,7 @@ void export(char *cfgfile, char *weightfile, char *out)
         FILE *f;
         f = fopen(file, "w");
         int size = net->inputs;
-        printf("\noutput size: %d\n", size);
+        printf("\nnetwork input size: %d\n", size);
         fwrite((void*)X, sizeof(char), sizeof(float)*size, f);
         fclose (f);
     }
@@ -484,7 +502,7 @@ void export(char *cfgfile, char *weightfile, char *out)
         FILE *f;
         f = fopen(file, "w");
         int size = l.outputs;
-        printf("\noutput size: %d\n", size);
+        printf("\nnetworks output size: %d\n", size);
         fwrite((void*)l.output, sizeof(char), sizeof(float)*size, f);
         fclose (f);
     }
