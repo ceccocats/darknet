@@ -399,14 +399,14 @@ void visualize(char *cfgfile, char *weightfile)
 
 void export(char *cfgfile, char *weightfile, char *out)
 {
-    network net = parse_network_cfg(cfgfile);
+    network *net = parse_network_cfg(cfgfile);
     if(weightfile){
-        load_weights(&net, weightfile);
+        load_weights(net, weightfile);
     }
 
     int i;
-    for(i=0; i<net.n; i++) {
-        layer l = net.layers[i];
+    for(i=0; i<net->n; i++) {
+        layer l = net->layers[i];
         printf("n: %d, type %d\n", i, l.type);
         if(l.type == CONVOLUTIONAL) {
             int wg_num = l.n*l.c*l.size*l.size;
@@ -453,9 +453,9 @@ void export(char *cfgfile, char *weightfile, char *out)
     double time;
    
     image im = load_image_color("data/dog.jpg",0,0);
-    image sized = letterbox_image(im, net.w, net.h);
+    image sized = letterbox_image(im, net->w, net->h);
     
-    layer l = net.layers[net.n-1];
+    layer l = net->layers[net->n-1];
     float *X = sized.data;
     
     //////////////////
@@ -465,7 +465,7 @@ void export(char *cfgfile, char *weightfile, char *out)
 
         FILE *f;
         f = fopen(file, "w");
-        int size = net.inputs;
+        int size = net->inputs;
         printf("\noutput size: %d\n", size);
         fwrite((void*)X, sizeof(char), sizeof(float)*size, f);
         fclose (f);
