@@ -447,15 +447,28 @@ void export(char *cfgfile, char *weightfile, char *out)
         } else if(l.type == YOLO) {
             printf("export YOLO\n");
 
-            int b_num = l.total;
+            int b_num = l.total*2;
+            printf("mask: %d\n",l.n);
             printf("biases: %d\n",b_num);
 
             char *file[256];
             sprintf(file, "%s/g%d.bin", out, i);
 
+            // convert mask into float
+            float mask_f[256];
+            for(int m=0; m<l.n; m++) {
+	        	mask_f[m] = l.mask[m];
+	    	    printf("mask %f\n", mask_f[m]);
+            }
+
+            for(int m=0; m<b_num; m++) {
+                printf("anchor %f\n", l.biases[m]);	    
+            }
+
             FILE *f;
             f = fopen(file, "w");
             printf("write binary %s\n", file);
+            fwrite((void*)mask_f, sizeof(char), sizeof(float)*l.n, f);
             fwrite((void*)l.biases, sizeof(char), sizeof(float)*b_num, f);
             fclose (f);
 
