@@ -446,7 +446,18 @@ void export(char *cfgfile, char *weightfile, char *out)
             fclose (f);
         } else if(l.type == YOLO) {
             printf("export YOLO\n");
-            //assert(0 == "layer type TODO");
+
+            int b_num = l.total;
+            printf("biases: %d\n",b_num);
+
+            char *file[256];
+            sprintf(file, "%s/g%d.bin", out, i);
+
+            FILE *f;
+            f = fopen(file, "w");
+            printf("write binary %s\n", file);
+            fwrite((void*)l.biases, sizeof(char), sizeof(float)*b_num, f);
+            fclose (f);
 
         } else if(l.type == SHORTCUT) {
             printf("export SHORTCUT\n");
