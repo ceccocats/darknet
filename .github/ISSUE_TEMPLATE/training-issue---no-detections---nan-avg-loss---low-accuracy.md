@@ -8,10 +8,7 @@ assignees: ''
 ---
 
 If you have an issue with training - no-detections / Nan avg-loss / low accuracy:
-<<<<<<< HEAD
-=======
     * read FAQ: https://github.com/AlexeyAB/darknet/wiki/FAQ---frequently-asked-questions
->>>>>>> 17cf4bfbfc49a588e1ef3da5c5d706f72cd1cb10
     * what command do you use?
     * what dataset do you use?   
     * what Loss and mAP did you get?

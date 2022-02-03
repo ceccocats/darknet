@@ -245,6 +245,7 @@ network make_network(int n)
     net.n = n;
     net.layers = (layer*)xcalloc(net.n, sizeof(layer));
     net.seen = (uint64_t*)xcalloc(1, sizeof(uint64_t));
+    net.cuda_graph_ready = (int*)xcalloc(1, sizeof(int));
     net.badlabels_reject_threshold = (float*)xcalloc(1, sizeof(float));
     net.delta_rolling_max = (float*)xcalloc(1, sizeof(float));
     net.delta_rolling_avg = (float*)xcalloc(1, sizeof(float));
@@ -272,7 +273,7 @@ void forward_network(network net, network_state state)
     for(i = 0; i < net.n; ++i){
         state.index = i;
         layer l = net.layers[i];
-        if(l.delta && state.train){
+        if(l.delta && state.train && l.train){
             scal_cpu(l.outputs * l.batch, 0, l.delta, 1);
         }
         //double time = get_time_point();
@@ -308,6 +309,7 @@ void update_network(network net)
     float rate = get_current_rate(net);
     for(i = 0; i < net.n; ++i){
         layer l = net.layers[i];
+        if (l.train == 0) continue;
         if(l.update){
             l.update(l, update_batch, rate, net.momentum, net.decay);
         }
@@ -649,7 +651,7 @@ int resize_network(network *net, int w, int h)
             resize_cost_layer(&l, inputs);
         }else{
             fprintf(stderr, "Resizing type %d \n", (int)l.type);
-            error("Cannot resize this type of layer");
+            error("Cannot resize this type of layer", DARKNET_LOC);
         }
         if(l.workspace_size > workspace_size) workspace_size = l.workspace_size;
         inputs = l.outputs;
@@ -895,7 +897,13 @@ void custom_get_region_detections(layer l, int w, int h, int net_w, int net_h, f
         dets[j].classes = l.classes;
         dets[j].bbox = boxes[j];
         dets[j].objectness = 1;
+        float highest_prob = 0;
+        dets[j].best_class_idx = -1;
         for (i = 0; i < l.classes; ++i) {
+            if (probs[j][i] > highest_prob) {
+            	highest_prob = probs[j][i];
+            	dets[j].best_class_idx = i;
+            }
             dets[j].prob[i] = probs[j][i];
         }
     }
@@ -1236,6 +1244,7 @@ void free_network(network net)
     free(net.scales);
     free(net.steps);
     free(net.seen);
+    free(net.cuda_graph_ready);
     free(net.badlabels_reject_threshold);
     free(net.delta_rolling_max);
     free(net.delta_rolling_avg);
@@ -1468,6 +1477,7 @@ void copy_weights_net(network net_train, network *net_map)
         }
         net_map->layers[k].batch = 1;
         net_map->layers[k].steps = 1;
+        net_map->layers[k].train = 0;
     }
 }
 
