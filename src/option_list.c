@@ -7,6 +7,7 @@
 
 list *read_data_cfg(char *filename)
 {
+    printf("data: %s\n", filename);
     FILE *file = fopen(filename, "r");
     if(file == 0) file_error(filename);
     char *line;

@@ -1815,6 +1815,7 @@ network parse_network_cfg_custom(char *filename, int batch, int time_steps)
 
 list *read_cfg(char *filename)
 {
+    printf("read cfg: %s\n", filename);
     FILE *file = fopen(filename, "r");
     if(file == 0) file_error(filename);
     char *line;

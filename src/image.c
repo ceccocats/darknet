@@ -20,6 +20,8 @@
 #include "stb_image_write.h"
 #endif
 
+#include <unistd.h>
+
 extern int check_mistakes;
 //int windows = 0;
 
@@ -266,6 +268,13 @@ void draw_bbox(image a, box bbox, int w, float r, float g, float b)
 
 image **load_alphabet()
 {
+    // this process path 
+    char pBuf[4096];
+    size_t len = sizeof(pBuf); 
+    int bytes = readlink("/proc/self/exe", pBuf, len);
+    if(bytes >= 0)
+        pBuf[bytes-7] = '\0'; // minus "darknet" to get directory
+    
     int i, j;
     const int nsize = 8;
     image** alphabets = (image**)xcalloc(nsize, sizeof(image*));
@@ -273,7 +282,7 @@ image **load_alphabet()
         alphabets[j] = (image*)xcalloc(128, sizeof(image));
         for(i = 32; i < 127; ++i){
             char buff[256];
-            sprintf(buff, "data/labels/%d_%d.png", i, j);
+            sprintf(buff, "%s/data/labels/%d_%d.png", pBuf, i, j);
             alphabets[j][i] = load_image_color(buff, 0, 0);
         }
     }
