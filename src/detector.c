@@ -301,7 +301,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         int calc_map_for_each = 4 * train_images_num / (net.batch * net.subdivisions);  // calculate mAP for each 4 Epochs
         calc_map_for_each = fmax(calc_map_for_each, 100);
         int next_map_calc = iter_map + calc_map_for_each;
-        next_map_calc = fmax(next_map_calc, net.burn_in);
+        //next_map_calc = fmax(next_map_calc, net.burn_in);
         //next_map_calc = fmax(next_map_calc, 400);
         if (calc_map) {
             printf("\n (next mAP calculation at %d iterations) ", next_map_calc);
@@ -398,9 +398,9 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
 #ifdef GPU
             if (ngpus != 1) sync_nets(nets, ngpus, 0);
 #endif
-            char buff[256];
-            sprintf(buff, "%s/%s_%d.weights", backup_directory, base, iteration);
-            save_weights(net, buff);
+            //char buff[256];
+            //sprintf(buff, "%s/%s_%d.weights", backup_directory, base, iteration);
+            //save_weights(net, buff);
         }
 
         if (iteration >= (iter_save_last + 100) || (iteration % 100 == 0 && iteration > 1)) {
