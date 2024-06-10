@@ -65,3 +65,10 @@ uselib
 uselib_track
 darknet
 vcpkg/
+
+build/
+*.cmake
+CMake*
+darknet53*
+dataset
+bad.list

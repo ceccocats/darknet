@@ -431,6 +431,7 @@ void visualize(char *cfgfile, char *weightfile)
 
 void run_export(char *cfgfile, char *weightfile, char *out)
 {
+    printf("cfg %s wgs %s out %s\n", cfgfile, weightfile, out);
     network net = parse_network_cfg(cfgfile);
     if(weightfile){
         load_weights(&net, weightfile);

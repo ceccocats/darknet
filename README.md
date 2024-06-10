@@ -9,9 +9,11 @@ make
 ```
 
 ### Train
-
 dont use pretrained weights with 1 channel input (for instance with yolo3_flir)
-
+```
+wget https://pjreddie.com/media/files/darknet53.conv.74 # pretrained weights
+./darknet detector train data cfg darknet53.conv.74 -map
+```
 ### Test
 ```
 ./darknet detector demo data cfg weights test_video.mp4 -thresh 0.3
@@ -19,14 +21,14 @@ dont use pretrained weights with 1 channel input (for instance with yolo3_flir)
 
 ### Export weights to tkDNN
 ```
+cmake . -DENABLE_CUDA=OFF -DENABLE_CUDNN=OFF -DENABLE_CUDNN_HALF=OFF
 ./darknet export cfg weights out/path/
-
 ```
-wget https://pjreddie.com/media/files/darknet53.conv.74 # pretrained weights
-./darknet detector train data cfg darknet53.conv.74 -map
+### Export weights to tkDNNv2 (onnx) (conversion from https://github.com/jkjung-avt/tensorrt_demos)
 ```
-
-
+./darknet detector test cfg/coco.data yolov4.cfg yolov4.weights -thresh 0.3 data/dog.jpg
+python3 yolo_to_onnx.py -m yolov4
+```
 
 # Yolo v4, v3 and v2 for Windows and Linux
 
