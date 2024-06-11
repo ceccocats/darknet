@@ -59,7 +59,7 @@ import onnx
 from onnx import helper, TensorProto
 
 
-MAX_BATCH_SIZE = 1
+MAX_BATCH_SIZE = -1
 
 
 def parse_args():
@@ -170,6 +170,27 @@ def get_anchor_num(cfg_file_path):
     assert len(set(num_anchors)) == 1, 'Found different num anchors'
 
     return num_anchors[0]
+
+
+def get_masks(cfg_file_path):
+    """Get masks of all yolo layers from the cfg file."""
+    with open(cfg_file_path, 'r') as f:
+        cfg_lines = f.readlines()
+    mask_lines = [l.strip() for l in cfg_lines if l.startswith('mask')]
+    mask_strs = [l.split('=')[-1] for l in mask_lines]
+    masks = [eval('[%s]' % s) for s in mask_strs]
+    # print("mask: ", masks)
+    return masks
+
+
+def get_masks_num(cfg_file_path):
+    """Find number of masks (masks) of the yolo model."""
+    masks = get_masks(cfg_file_path)
+    num_masks = [len(a) for a in masks]
+
+    assert len(num_masks) > 0, 'Found no `mask` fields in config'
+    assert len(set(num_masks)) == 1, 'Found different num masks'
+    return num_masks[0]
 
 
 class DarkNetParser(object):
@@ -1012,6 +1033,15 @@ class GraphBuilderONNX(object):
         These are dummy nodes which would be removed in the end.
         """
         print("YOLO: ", layer_name, layer_dict)
+        masks = layer_dict['mask']
+        anchors = layer_dict['anchors']
+        anchors = [ [anchors[m*2 + 0], anchors[m*2 + 1]] for m in masks]
+        anchors = np.ascontiguousarray(anchors, dtype=np.float32).flatten()
+        print("masks: ", masks)
+        print("anchors: ", anchors)
+        neth= self.input_tensor.type.tensor_type.shape.dim[2].dim_value
+        netw= self.input_tensor.type.tensor_type.shape.dim[3].dim_value
+        print("net: ", netw, neth)
 
         previous_node_specs = self._get_previous_node_specs()
         channels = previous_node_specs.channels
@@ -1021,11 +1051,14 @@ class GraphBuilderONNX(object):
             inputs=inputs,
             outputs=[layer_name],
             name=layer_name,
-            masks=layer_dict['mask'],
-            anchors=layer_dict['anchors'],
+            masks=masks,
+            anchors=anchors,
             classes=layer_dict['classes'],
             num=layer_dict['num'],
             scale_x_y=layer_dict['scale_x_y'],
+            net_w=netw,
+            net_h=neth,
+            new_coords=0
         )
         self._nodes.append(yolo_node)
         return layer_name, channels
@@ -1052,21 +1085,22 @@ def main():
     output_tensor_names = get_output_convs(layer_configs)
     # e.g. ['036_convolutional', '044_convolutional', '052_convolutional']
 
-    c = (category_num + 5) * get_anchor_num(cfg_file_path)
+    m = get_masks_num(cfg_file_path)
     h, w = get_h_and_w(layer_configs)
     if len(output_tensor_names) == 2:
         output_tensor_shapes = [
-            [c, h // 32, w // 32], [c, h // 16, w // 16]]
+            [m*(h // 32)*(w // 32), 6], [m*(h // 16)*(w // 16), 6]]
     elif len(output_tensor_names) == 3:
         output_tensor_shapes = [
-            [c, h // 32, w // 32], [c, h // 16, w // 16],
-            [c, h // 8, w // 8]]
+            [m*(h // 32)*(w // 32), 6], [m*(h // 16)*(w // 16), 6],
+            [m*(h // 8)*(w // 8), 6]]
     elif len(output_tensor_names) == 4:
         output_tensor_shapes = [
-            [c, h // 64, w // 64], [c, h // 32, w // 32],
-            [c, h // 16, w // 16], [c, h // 8, w // 8]]
+            [m*(h // 64)*(w // 64), 6], [m*(h // 32)*(w // 32), 6],
+            [m*(h // 16)*(w // 16), 6], [m*(h // 8)*(w // 8), 6]]
     if is_pan_arch(cfg_file_path):
         output_tensor_shapes.reverse()
+    print(output_tensor_shapes)
     output_tensor_dims = OrderedDict(
         zip(output_tensor_names, output_tensor_shapes))
 
