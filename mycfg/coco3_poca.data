@@ -1,0 +1,7 @@
+classes= 3
+train  = dataset/training.txt
+valid  = dataset/validation.txt
+names = mycfg/coco3.names
+backup = backup_hguard_poca/
+eval=coco
+

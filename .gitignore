@@ -72,3 +72,9 @@ CMake*
 darknet53*
 dataset
 bad.list
+
+*.onnx
+onnx/
+
+pred.json
+predictions.jpg
