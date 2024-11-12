@@ -74,6 +74,12 @@ def parse_args():
               'yolov4-csp|yolov4x-mish|yolov4-p5]-[{dimension}], where '
               '{dimension} could be either a single number (e.g. '
               '288, 416, 608) or 2 numbers, WxH (e.g. 416x256)'))
+    parser.add_argument(
+        '-w', '--weights', type=str, required=True,
+        help=('weights path'))
+    parser.add_argument(
+        '-cfg', '--config', type=str, required=True,
+        help=('config path'))
     args = parser.parse_args()
     return args
 
@@ -539,7 +545,7 @@ class WeightLoader(object):
                 param_shape = [channels_out, channels_in, filter_h, filter_w]
             elif suffix == 'bias':
                 param_shape = [channels_out]
-        param_size = np.product(np.array(param_shape))
+        param_size = np.prod(np.array(param_shape))
         param_data = np.ndarray(
             shape=param_shape,
             dtype='float32',
@@ -1070,10 +1076,10 @@ def main():
                          'script is only compatible with python3...')
 
     args = parse_args()
-    cfg_file_path = '%s.cfg' % args.model
+    cfg_file_path = args.config
     if not os.path.isfile(cfg_file_path):
         raise SystemExit('ERROR: file (%s) not found!' % cfg_file_path)
-    weights_file_path = '%s.weights' % args.model
+    weights_file_path = args.weights
     if not os.path.isfile(weights_file_path):
         raise SystemExit('ERROR: file (%s) not found!' % weights_file_path)
     output_file_path = '%s.onnx' % args.model
