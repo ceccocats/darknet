@@ -1,0 +1,30 @@
+{
+    "name": "Darknet Worker (CUDA 11.8)",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "postCreateCommand": "./.devcontainer/postCreateScript.sh",
+    "remoteUser": "vscode",
+    "runArgs": [
+        "--name=darknet_dev",
+        "--security-opt",
+        "seccomp=unconfined",
+        "--privileged",
+        "--net=host",
+        "--gpus=all",
+        "--shm-size=10g"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-vscode.cpptools"
+            ]
+        }
+    },
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/darknet,type=bind",
+    "workspaceFolder": "/workspaces/darknet",
+    "mounts": [
+        "source=${localWorkspaceFolder}/../../.git,target=/.git,type=bind"
+    ]
+}

@@ -1,0 +1,9 @@
+*.weights
+*.mp4
+*.jpg
+*.png
+data/
+backup/
+*.so
+*.o
+obj/
