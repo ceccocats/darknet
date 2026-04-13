@@ -80,6 +80,9 @@ def parse_args():
     parser.add_argument(
         '-cfg', '--config', type=str, required=True,
         help=('config path'))
+    parser.add_argument(
+        '-o', '--output', type=str, default=None,
+        help=('output path for the .onnx file (e.g. /path/to/save/model.onnx)'))
     args = parser.parse_args()
     return args
 
@@ -1082,7 +1085,10 @@ def main():
     weights_file_path = args.weights
     if not os.path.isfile(weights_file_path):
         raise SystemExit('ERROR: file (%s) not found!' % weights_file_path)
-    output_file_path = '%s.onnx' % args.model
+    if args.output:
+        output_file_path = args.output
+    else:
+        output_file_path = '%s.onnx' % args.model
 
     print('Parsing DarkNet cfg file...')
     parser = DarkNetParser()
