@@ -80,9 +80,40 @@ def class_colors(names):
     class name
     """
     return {name: (
-        random.randint(0, 255),
-        random.randint(0, 255),
-        random.randint(0, 255)) for name in names}
+        random.randint(0, 255))
+        for name in names
+    }
+
+
+def load_network_inference(config_file, weights, classes_file, batch_size=1):
+    """
+    Load model description and weights for pure inference.
+    Bypasses the C-level metadata loader and reads classes directly in Python.
+
+    args:
+        config_file (str): path to .cfg model file
+        weights (str): path to weights
+        classes_file (str): path to a text file containing class names (one per line)
+        batch_size (int): batch size
+    returns:
+        network: trained model
+        class_names: list of class names
+        class_colors: list of colors for drawing bounding boxes
+    """
+    # 1. Load the network using the C binding (this part is still required)
+    network = load_net_custom(
+        config_file.encode("ascii"), weights.encode("ascii"), 0, batch_size
+    )
+
+    # 2. Read the class names purely in Python
+    with open(classes_file, "r") as f:
+        # Read lines, strip whitespace/newlines, and ignore empty lines
+        class_names = [line.strip() for line in f.readlines() if line.strip()]
+
+    # 3. Generate bounding box colors
+    colors = class_colors(class_names)
+
+    return network, class_names, colors
 
 
 def load_network(config_file, data_file, weights, batch_size=1):
